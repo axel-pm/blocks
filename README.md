@@ -45,7 +45,7 @@ in your project automatically; you wire the block in yourself.
 ## Shape of every block
 
 ```
-blocks/<name>/
+<name>/                 (at the repo root, e.g. inference/, rag/)
   block.json      manifest: files, peerDependencies, env contract, adapters
   README.md       what it does, the public API, the env table, how to wire it
   SECURITY.md     threat model: secret handling, injection surface, safe defaults

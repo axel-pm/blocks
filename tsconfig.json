@@ -11,5 +11,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["blocks/**/*.ts"]
+  "include": ["*/**/*.ts"],
+  "exclude": ["node_modules", ".copytest"]
 }
