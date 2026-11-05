@@ -1,0 +1,11 @@
+{
+  "$schema": "./registry.schema.json",
+  "blocks": [
+    {
+      "name": "inference",
+      "path": "blocks/inference",
+      "description": "Provider-agnostic model resolution with EU/sovereign targets and a fail-closed active-target chooser.",
+      "peerDependencies": { "ai": "^7", "@ai-sdk/mistral": "^4", "@ai-sdk/openai-compatible": "^3" }
+    }
+  ]
+}

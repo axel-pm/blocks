@@ -1,0 +1,19 @@
+{
+  "name": "blocks",
+  "private": true,
+  "type": "module",
+  "description": "Copy-in source registry of composable AI building blocks. This package.json exists only to type-check and test the blocks; it is not published and not copied into consuming projects.",
+  "bin": { "blocks": "cli/blocks.mjs" },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "cli": "node cli/blocks.mjs"
+  },
+  "devDependencies": {
+    "@ai-sdk/mistral": "^4.0.75",
+    "@ai-sdk/openai-compatible": "^3.0.81",
+    "ai": "^7.0.142",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

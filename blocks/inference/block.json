@@ -1,0 +1,45 @@
+{
+  "name": "inference",
+  "version": "0.1.0",
+  "description": "Provider-agnostic model resolution: one seam turns (role) into model + provider options, so you can swap where inference runs (Vercel AI Gateway, Mistral EU, any OpenAI-compatible endpoint) without touching call sites. A fail-closed chooser keeps an unvetted or misconfigured target from ever serving traffic; residency/retention are operator-declared metadata enforced by the injected gateway options, not by the block.",
+  "peerDependencies": {
+    "ai": "^7",
+    "@ai-sdk/mistral": "^4",
+    "@ai-sdk/openai-compatible": "^3"
+  },
+  "env": [
+    {
+      "name": "INFERENCE_TARGET",
+      "required": false,
+      "default": "(registry default)",
+      "desc": "next-postgres adapter only: overrides the stored target id. The core reads no env."
+    },
+    {
+      "name": "<TARGET>_API_KEY",
+      "required": false,
+      "default": "(unset)",
+      "desc": "the apiKeyEnv you name on each off-gateway target (e.g. MISTRAL_API_KEY, SCW_SECRET_KEY). Read via the injected secret reader, never by the core directly. A target with no key present is never selectable."
+    }
+  ],
+  "files": [
+    { "from": "src/types.ts", "to": "lib/inference/src/types.ts" },
+    { "from": "src/registry.ts", "to": "lib/inference/src/registry.ts" },
+    { "from": "src/resolve.ts", "to": "lib/inference/src/resolve.ts" },
+    { "from": "src/index.ts", "to": "lib/inference/src/index.ts" },
+    { "from": "tests/fixtures.ts", "to": "lib/inference/tests/fixtures.ts" },
+    { "from": "tests/inference.test.ts", "to": "lib/inference/tests/inference.test.ts" },
+    { "from": "tests/portability.test.ts", "to": "lib/inference/tests/portability.test.ts" },
+    { "from": "README.md", "to": "lib/inference/README.md" },
+    { "from": "SECURITY.md", "to": "lib/inference/SECURITY.md" }
+  ],
+  "adapters": [
+    {
+      "name": "next-postgres",
+      "desc": "Runtime target selection backed by a settings table + env override, with a short cache and the fail-closed downgrade. You pass readSetting/writeSetting for your DB client.",
+      "files": [
+        { "from": "adapters/next-postgres-target.ts", "to": "lib/inference/adapters/next-postgres-target.ts" },
+        { "from": "tests/target-selector.test.ts", "to": "lib/inference/tests/target-selector.test.ts" }
+      ]
+    }
+  ]
+}
