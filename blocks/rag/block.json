@@ -1,0 +1,59 @@
+{
+  "name": "rag",
+  "version": "0.1.0",
+  "description": "A portable retrieval pipeline: documents → structure-aware chunks → an embedded, serialisable index → cited top-k retrievals. The core is pure and provider-free (the embedder is injected); adapters add a security-defaulted repo/dir ingester, an AI SDK embedder, and a one-command CLI to point at a repo or knowledge base and get a queryable RAG.",
+  "peerDependencies": {
+    "ai": "^7"
+  },
+  "env": [
+    {
+      "name": "AI_GATEWAY_API_KEY",
+      "required": false,
+      "default": "(unset; or OIDC on Vercel)",
+      "desc": "ai-embedder / cli only: credentials for the AI SDK embedding call. The core and the fs ingester read no env."
+    }
+  ],
+  "files": [
+    { "from": "src/types.ts", "to": "lib/rag/src/types.ts" },
+    { "from": "src/chunk.ts", "to": "lib/rag/src/chunk.ts" },
+    { "from": "src/vector.ts", "to": "lib/rag/src/vector.ts" },
+    { "from": "src/build.ts", "to": "lib/rag/src/build.ts" },
+    { "from": "src/retrieve.ts", "to": "lib/rag/src/retrieve.ts" },
+    { "from": "src/serialize.ts", "to": "lib/rag/src/serialize.ts" },
+    { "from": "src/format.ts", "to": "lib/rag/src/format.ts" },
+    { "from": "src/index.ts", "to": "lib/rag/src/index.ts" },
+    { "from": "tests/fixtures.ts", "to": "lib/rag/tests/fixtures.ts" },
+    { "from": "tests/rag.test.ts", "to": "lib/rag/tests/rag.test.ts" },
+    { "from": "tests/format.test.ts", "to": "lib/rag/tests/format.test.ts" },
+    { "from": "tests/portability.test.ts", "to": "lib/rag/tests/portability.test.ts" },
+    { "from": "README.md", "to": "lib/rag/README.md" },
+    { "from": "SECURITY.md", "to": "lib/rag/SECURITY.md" }
+  ],
+  "adapters": [
+    {
+      "name": "fs-ingest",
+      "desc": "Walk a directory (repo/docs/KB) into Documents, skipping secrets, noise dirs, and binary/oversized files by default.",
+      "files": [
+        { "from": "adapters/fs-ingest.ts", "to": "lib/rag/adapters/fs-ingest.ts" },
+        { "from": "tests/fs-ingest.test.ts", "to": "lib/rag/tests/fs-ingest.test.ts" }
+      ]
+    },
+    {
+      "name": "ai-embedder",
+      "desc": "Wrap an AI SDK embedding model (gateway string or instance) as the core's Embedder. Requires the `ai` peer dep.",
+      "files": [
+        { "from": "adapters/ai-embedder.ts", "to": "lib/rag/adapters/ai-embedder.ts" }
+      ]
+    },
+    {
+      "name": "cli",
+      "desc": "The one-command experience: `rag build <dir> --out kb.json` and `rag query kb.json \"q\"`. Pulls in fs-ingest + ai-embedder. Run with tsx. Requires the `ai` peer dep.",
+      "files": [
+        { "from": "adapters/fs-ingest.ts", "to": "lib/rag/adapters/fs-ingest.ts" },
+        { "from": "adapters/ai-embedder.ts", "to": "lib/rag/adapters/ai-embedder.ts" },
+        { "from": "tests/fs-ingest.test.ts", "to": "lib/rag/tests/fs-ingest.test.ts" },
+        { "from": "cli/rag.ts", "to": "lib/rag/cli/rag.ts" }
+      ]
+    }
+  ]
+}

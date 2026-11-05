@@ -6,6 +6,12 @@
       "path": "blocks/inference",
       "description": "Provider-agnostic model resolution with EU/sovereign targets and a fail-closed active-target chooser.",
       "peerDependencies": { "ai": "^7", "@ai-sdk/mistral": "^4", "@ai-sdk/openai-compatible": "^3" }
+    },
+    {
+      "name": "rag",
+      "path": "blocks/rag",
+      "description": "Portable retrieval pipeline (ingest → chunk → embed → index → cited retrieval) with a provider-free core and a one-command repo/KB CLI.",
+      "peerDependencies": { "ai": "^7" }
     }
   ]
 }
