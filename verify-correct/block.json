@@ -1,0 +1,27 @@
+{
+  "name": "verify-correct",
+  "version": "0.1.0",
+  "description": "Check that a generated answer is grounded in its sources and, if not, correct it — a bounded verify/correct loop. Provider-free core (judge, corrector, and generator are injected functions); fail-safe (a broken judge/corrector never crashes answering or silently claims an answer is verified). AI SDK judge + corrector adapter included.",
+  "peerDependencies": { "ai": "^7" },
+  "env": [],
+  "files": [
+    { "from": "src/types.ts", "to": "lib/verify-correct/src/types.ts" },
+    { "from": "src/verify.ts", "to": "lib/verify-correct/src/verify.ts" },
+    { "from": "src/loop.ts", "to": "lib/verify-correct/src/loop.ts" },
+    { "from": "src/index.ts", "to": "lib/verify-correct/src/index.ts" },
+    { "from": "tests/verify.test.ts", "to": "lib/verify-correct/tests/verify.test.ts" },
+    { "from": "tests/portability.test.ts", "to": "lib/verify-correct/tests/portability.test.ts" },
+    { "from": "README.md", "to": "lib/verify-correct/README.md" },
+    { "from": "SECURITY.md", "to": "lib/verify-correct/SECURITY.md" }
+  ],
+  "adapters": [
+    {
+      "name": "ai-verify",
+      "desc": "Build a Judge and Corrector from AI SDK models (strict JSON-reply fact-check + a revise pass). Requires the `ai` peer dep.",
+      "files": [
+        { "from": "adapters/ai-verify.ts", "to": "lib/verify-correct/adapters/ai-verify.ts" },
+        { "from": "tests/ai-verify.test.ts", "to": "lib/verify-correct/tests/ai-verify.test.ts" }
+      ]
+    }
+  ]
+}

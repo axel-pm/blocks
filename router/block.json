@@ -1,0 +1,27 @@
+{
+  "name": "router",
+  "version": "0.1.0",
+  "description": "Classify a query into a tier (e.g. light | standard | deep) to pick which model answers it: fast deterministic rules first (length, keywords, context), then an optional injected LLM classifier, then a safe default. Fail-safe — a classifier that errors or returns an unknown tier falls through to the default. Provider-free core; an AI SDK classifier adapter is included.",
+  "peerDependencies": { "ai": "^7" },
+  "env": [],
+  "files": [
+    { "from": "src/types.ts", "to": "lib/router/src/types.ts" },
+    { "from": "src/router.ts", "to": "lib/router/src/router.ts" },
+    { "from": "src/heuristics.ts", "to": "lib/router/src/heuristics.ts" },
+    { "from": "src/index.ts", "to": "lib/router/src/index.ts" },
+    { "from": "tests/router.test.ts", "to": "lib/router/tests/router.test.ts" },
+    { "from": "tests/portability.test.ts", "to": "lib/router/tests/portability.test.ts" },
+    { "from": "README.md", "to": "lib/router/README.md" },
+    { "from": "SECURITY.md", "to": "lib/router/SECURITY.md" }
+  ],
+  "adapters": [
+    {
+      "name": "ai-classifier",
+      "desc": "Build a Classifier from an AI SDK model (ask a cheap model to label the query with a tier). Requires the `ai` peer dep.",
+      "files": [
+        { "from": "adapters/ai-classifier.ts", "to": "lib/router/adapters/ai-classifier.ts" },
+        { "from": "tests/ai-classifier.test.ts", "to": "lib/router/tests/ai-classifier.test.ts" }
+      ]
+    }
+  ]
+}

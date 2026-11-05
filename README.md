@@ -68,8 +68,23 @@ adding a block.
 
 [`registry.json`](./registry.json) indexes the blocks. Current:
 
+Together these decompose a grounded-answer AI app — route a query, resolve a model, retrieve and
+cite, verify, and keep it safe and configurable — each usable on its own.
+
 - **inference** — provider-agnostic model resolution. One seam turns `(role) → model + provider
   options`; swap where inference runs (Vercel AI Gateway, Mistral EU, any OpenAI-compatible
   endpoint, self-hosted) without touching call sites. A fail-closed chooser keeps an unvetted or
   misconfigured target from serving traffic; residency / retention are operator-declared metadata
   enforced by the injected gateway options, not by the block.
+- **rag** — retrieval pipeline: documents → structure-aware chunks → an embedded, serialisable index
+  → cited top-k retrievals. Provider-free core (embedder injected); a security-defaulted repo/KB
+  ingester and a one-command CLI. Fences passages against prompt injection.
+- **router** — classify a query into a tier (which model should answer): deterministic rules first,
+  then an optional injected LLM classifier (bounded by a timeout), then a safe default. Fail-safe.
+- **verify-correct** — bounded generate → verify → correct loop that catches ungrounded answers;
+  judge/corrector/generate injected. Fail-safe: never reports a false "verified", never crashes
+  answering.
+- **guardrails** — security primitives: reversible PII masking, per-principal spend/rate caps over
+  an injected store, and untrusted-content fencing. Zero dependencies.
+- **settings** — runtime operator-editable config: typed setting resolved env-override → stored
+  value → default, short cache (live after a write), fail-safe decoding. Store + env injected.

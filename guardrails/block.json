@@ -1,0 +1,29 @@
+{
+  "name": "guardrails",
+  "version": "0.1.0",
+  "description": "Security primitives for an AI app: reversible PII masking (emails, phones, names, custom patterns) to redact before text leaves your trust boundary; per-principal spend/rate caps over an injected atomic store; and untrusted-content fencing + an advisory injection detector for prompt safety. Zero-dependency pure core.",
+  "peerDependencies": {},
+  "env": [],
+  "files": [
+    { "from": "src/types.ts", "to": "lib/guardrails/src/types.ts" },
+    { "from": "src/mask.ts", "to": "lib/guardrails/src/mask.ts" },
+    { "from": "src/cap.ts", "to": "lib/guardrails/src/cap.ts" },
+    { "from": "src/untrusted.ts", "to": "lib/guardrails/src/untrusted.ts" },
+    { "from": "src/index.ts", "to": "lib/guardrails/src/index.ts" },
+    { "from": "tests/mask.test.ts", "to": "lib/guardrails/tests/mask.test.ts" },
+    { "from": "tests/untrusted.test.ts", "to": "lib/guardrails/tests/untrusted.test.ts" },
+    { "from": "tests/portability.test.ts", "to": "lib/guardrails/tests/portability.test.ts" },
+    { "from": "README.md", "to": "lib/guardrails/README.md" },
+    { "from": "SECURITY.md", "to": "lib/guardrails/SECURITY.md" }
+  ],
+  "adapters": [
+    {
+      "name": "memory-store",
+      "desc": "An in-memory CapStore for dev/tests (single-process). Shows the contract a real atomic store (Upstash/Postgres) must meet; see the file header for an Upstash sketch.",
+      "files": [
+        { "from": "adapters/memory-store.ts", "to": "lib/guardrails/adapters/memory-store.ts" },
+        { "from": "tests/cap.test.ts", "to": "lib/guardrails/tests/cap.test.ts" }
+      ]
+    }
+  ]
+}

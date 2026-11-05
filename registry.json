@@ -12,6 +12,30 @@
       "path": "rag",
       "description": "Portable retrieval pipeline (ingest → chunk → embed → index → cited retrieval) with a provider-free core and a one-command repo/KB CLI.",
       "peerDependencies": { "ai": "^7" }
+    },
+    {
+      "name": "guardrails",
+      "path": "guardrails",
+      "description": "Security primitives: reversible PII masking, per-principal spend/rate caps over an injected store, and untrusted-content fencing + an advisory injection detector. Zero dependencies.",
+      "peerDependencies": {}
+    },
+    {
+      "name": "settings",
+      "path": "settings",
+      "description": "Runtime operator-editable config: typed setting resolved env-override → stored value → default, with a short cache (live after a write) and fail-safe decoding. Store + env injected. Zero dependencies.",
+      "peerDependencies": {}
+    },
+    {
+      "name": "router",
+      "path": "router",
+      "description": "Classify a query into a tier (light/standard/deep) to pick which model answers: deterministic rules first, then an optional injected LLM classifier, then a safe default. Fail-safe. Provider-free core + AI SDK classifier adapter.",
+      "peerDependencies": { "ai": "^7" }
+    },
+    {
+      "name": "verify-correct",
+      "path": "verify-correct",
+      "description": "Check a generated answer is grounded in its sources and correct it if not, in a bounded verify/correct loop. Provider-free core (judge/corrector/generate injected), fail-safe. AI SDK judge+corrector adapter.",
+      "peerDependencies": { "ai": "^7" }
     }
   ]
 }
