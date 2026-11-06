@@ -1,27 +1,47 @@
 # inference
 
-Provider-agnostic model resolution for an AI SDK 7 app. Instead of hard-coding a model string
-and provider options at every `generateText`/`streamText` call, you describe **targets** (where
-and how inference runs) once, and resolve `(role) → { model, providerOptions, id }` through one
-seam. Switching target re-points the whole app — a different provider, region, or a sovereign
-open-weights endpoint — without editing call sites.
+**Swap where your AI runs — a cloud gateway, an EU provider, your own servers — without rewriting your app.**
 
-Residency, zero-retention, and no-training are **operator-declared metadata** on a target (its
-`residency` string and, for a gateway target, its injected `gatewayOptions`). The block does
-**not** enforce them — enforcement lives in the gateway options you inject or the provider
-endpoint you point at. What the block *does* guarantee is that an unvetted or misconfigured
-target can never actually serve traffic (see **Safety**). Keep a `residency` label honest about
-what the injected options / endpoint actually send; see [`SECURITY.md`](./SECURITY.md).
+![How inference works](../docs/img/inference.png)
 
-## Install the peer dependencies
+## What it does, in plain terms
+
+Most apps hard-code *which* AI model to call and *where* it runs, scattered across the codebase.
+Changing provider then means editing dozens of places. This block puts that decision in **one list**.
+
+Your code just asks for a *job* — "answer this", "verify that" — and this block hands back a
+ready-to-use model. The list of **targets** (where AI can run) lives in one place: a cloud gateway,
+an EU provider like Mistral, your own self-hosted endpoint. Change the list, and the whole app
+re-points — no call sites to touch.
+
+This matters for **data residency and sovereignty**: you can move all inference to an EU-pinned or
+self-hosted target in one change, when a customer or regulator requires it.
+
+> The block records where each target runs as a label you set (e.g. *"EU-pinned, zero retention"*).
+> It doesn't *enforce* residency itself — that comes from the provider endpoint and the options you
+> inject. Keep the label honest about what those actually do. See [`SECURITY.md`](./SECURITY.md).
+
+## Why it's safe
+
+A typo, a missing access key, or a provider you haven't approved for production can **never** send
+your users' traffic to the wrong place. Before any target is used, it's checked: does it really
+exist, is its key present, and has it been approved for production? Anything that fails is quietly
+swapped for your vetted default — and if a target is somehow reached without its key, the block
+refuses rather than send an unauthenticated request.
+
+## Where it fits
+
+Pair it with [router](../router), which decides *which tier* of model should answer; this block turns
+that tier into the actual model, running wherever you've chosen. It's independent of the other blocks.
+
+<details>
+<summary><b>For developers</b> — API, example, environment, and migration note</summary>
+
+Install the peer dependencies (drop the providers you don't use):
 
 ```bash
 npm i ai@^7 @ai-sdk/mistral@^4 @ai-sdk/openai-compatible@^3
 ```
-
-(Drop the providers you don't use, and delete the matching branch in `resolve.ts`.)
-
-## Public API (`lib/inference/index.ts`)
 
 ```ts
 // 1. Describe your roles and targets.
@@ -52,55 +72,35 @@ const res = streamText({ model: m.model, providerOptions: m.providerOptions, /* 
 audit.model = m.id;                       // raw gateway string, or provider-prefixed off-gateway
 ```
 
-`providerOptions` is composed by the resolver as `{ gateway }` (plus an `anthropic` block when
-`thinking` is on and the model is Anthropic). Only the `gateway` block of your injected options is
-carried — if you need another always-on provider key, add it at the call site.
-
-If you pass a custom `secrets` reader to `createResolver` (e.g. a vault, not `process.env`), pass
-the **same** reader to the `next-postgres` adapter, or its "is this target configured?" check and
-the resolver's key lookup can disagree (the resolver then fails closed and throws).
-
-For a gateway target, `m.providerOptions.gateway` is the **shared** options object (returned by
-reference so the path is byte-identical) — treat it as read-only; don't mutate it downstream.
-`resolve` reports `effortOf(target, role)` for you to pass to `streamText` as `reasoning`; it does
-**not** apply effort itself. `embedding`, `prices`, and `structuredOutputModels` on a target are
-advisory metadata for your own UI/cost/eval code — the block doesn't act on them.
-
-- `defineRegistry(targets, defaultId)` — validates the default exists; returns `{ targets, defaultId }`.
-- `pickEffectiveTarget(chosenId, registry, { isProd, hasKey })` — the fail-closed chooser (see Safety).
+- `defineRegistry(targets, defaultId)` — validates the default exists and is an enabled gateway
+  target; rejects duplicate ids.
+- `pickEffectiveTarget(chosenId, registry, { isProd, hasKey })` — the fail-closed chooser: a chosen
+  target is honoured only if it exists as an own key (a prototype name like `constructor` never
+  matches), is configured (gateway, or off-gateway with its key), and — in production — is `enabled`.
+  Otherwise it returns the vetted default.
 - `isConfigured(target, hasKey)` — gateway always true; off-gateway needs its key present.
-- `createResolver({ gatewayOptions, secrets })` → `{ resolve, modelIdOf, effortOf }`.
+- `createResolver({ gatewayOptions, secrets })` → `{ resolve, modelIdOf, effortOf }`. For a gateway
+  target, `resolve` returns the bare model string and your gateway options **by reference** — byte-
+  identical to a hand-written call. If handed an off-gateway target whose key resolves empty, it
+  **throws** rather than send an unauthenticated request.
+- Optional `next-postgres` adapter: `createTargetSelector({ registry, readSetting, writeSetting })`
+  gives `effectiveTarget()` (env override → cached DB setting → fail-closed downgrade) and a
+  `saveTarget(id)` that refuses to store a choice the core wouldn't honour.
 
-### Optional adapter: `next-postgres`
-
-`createTargetSelector({ registry, readSetting, writeSetting })` gives you `effectiveTarget()`
-(env override → cached DB setting → fail-closed downgrade) and a `saveTarget(id)` that refuses to
-store a choice the core wouldn't honour. You supply `readSetting`/`writeSetting` for your DB.
-
-## Environment
+### Environment
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
 | `INFERENCE_TARGET` | no | registry default | **adapter only** — overrides the stored target id |
 | `<apiKeyEnv>` per target | only to use that target | unset | the off-gateway key you name on each target; read via your injected `secrets` reader |
 
-The **core reads no environment at all.** Keys and the active-target override reach it only
-through the values you pass. That's what makes it portable and unit-testable without global mocks.
+The **core reads no environment at all.** Keys and the active-target override reach it only through
+the values you pass — that's what makes it portable and unit-testable without global mocks.
 
-## Safety
+### Migrating an existing app
 
-`pickEffectiveTarget` is fail-closed. A chosen target is honoured only when it (a) exists in the
-registry as an own key — a prototype name like `constructor` never matches, (b) is configured — a
-gateway, or an off-gateway target whose key is present, and (c) in production, is `enabled`.
-Otherwise it falls back to the registry default. `defineRegistry` requires that default to be an
-`enabled` **gateway** target, so the fallback is always reachable and vetted; and it rejects
-duplicate ids. If `resolve` is ever handed an off-gateway target whose key resolves empty, it
-**throws** rather than send an unauthenticated request. A bad setting, a missing key, or an
-unvetted target can never route inference somewhere you didn't approve. See [`SECURITY.md`](./SECURITY.md).
+Because the gateway path is byte-identical, lock the refactor with a test asserting the same model
+string and the same options object reference, proving the change is a no-op for the path you already
+ship.
 
-## Keeping the gateway path byte-identical
-
-For a gateway target, `resolve` returns your `gatewayOptions.gateway` object **by reference** and
-the bare model string — identical to a hand-written gateway call. If you're migrating an existing
-app onto this seam, lock that with a test asserting the same string and the same object reference,
-so the refactor is provably a no-op for the path you already ship.
+</details>

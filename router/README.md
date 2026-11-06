@@ -1,12 +1,44 @@
 # router
 
-Decide which model should answer a query. You describe tiers (e.g. `light | standard | deep`) and a
-small set of **rules**; the router tries them in order (fast, free, deterministic), and only if none
-matches does it consult an optional **LLM classifier** — then a safe **default**. Spend a few cheap
-tokens (or none) to avoid sending an easy question to an expensive model. Provider-free core; the
-classifier is injected.
+**Send each question to the right-sized model — a cheap one for easy questions, a powerful one for hard ones.**
 
-## Usage
+![How the router works](../docs/img/router.png)
+
+## What it does, in plain terms
+
+Large AI models are smart but expensive; small ones are cheap but limited. The router looks at each
+incoming question and decides which "tier" of model should answer it — so you don't pay for a big
+model to answer *"what are your opening hours?"*.
+
+It decides in three steps, stopping at the first that gives an answer:
+
+1. **Rules** — fast, free checks you write, tried in order. For example: *a very short question is
+   probably easy → use the light tier*, or *a question containing "compare" or "why" needs
+   reasoning → use the deep tier*.
+2. **An AI sorter** *(optional)* — only runs when no rule matched. A small, cheap model reads the
+   question and picks a tier. It's time-limited, so it can never hang.
+3. **A safe default** — if no rule matches and the sorter is unsure or switched off, the router falls
+   back to a sensible default tier.
+
+The result is a **tier** (e.g. `light` / `standard` / `deep`). The [inference](../inference) block
+turns that tier into an actual model. The router only *decides*; it doesn't call any model itself
+(except the optional sorter).
+
+## Why it's safe
+
+The router can never take your app down. Rules are simple and can't fail. If the AI sorter errors,
+times out, or returns something that isn't a real tier, the router ignores it and uses the safe
+default — it never routes to an invalid or unapproved choice. See [`SECURITY.md`](./SECURITY.md).
+
+## Where it fits
+
+Put the router at the front of your answer flow. Hand its chosen tier to [inference](../inference) to
+pick the model, then [rag](../rag) to gather sources and [verify-correct](../verify-correct) to check
+the answer. Keep the sorter model small — if sorting costs as much as just answering, route by rules
+only and drop the sorter.
+
+<details>
+<summary><b>For developers</b> — API, example, and notes</summary>
 
 ```ts
 import { createRouter, byMaxLength, byKeywords, byContext } from './lib/router/src';
@@ -18,13 +50,12 @@ const router = createRouter<Tier, { vip?: boolean }>({
   tiers: ['light', 'standard', 'deep'],
   default: 'standard',
   rules: [
-    // Order matters — first match wins. Put specific signals before broad ones, or a short
-    // "why…" / "compare…" query would be caught by the length rule before the keyword rule.
-    byContext('deep', (c) => !!c.vip, 'vip'),          // a context flag
+    // Order matters — first match wins. Put specific signals before broad ones.
+    byContext('deep', (c) => !!c.vip, 'vip'),
     byKeywords('deep', ['compare', 'why', 'analyze']), // reasoning words → deep (before length)
-    byMaxLength('light', 20),                          // otherwise, short → cheap
+    byMaxLength('light', 20),                           // otherwise, short → cheap
   ],
-  classifier: aiClassifier<Tier>({                  // only runs when no rule matches
+  classifier: aiClassifier<Tier>({                      // only runs when no rule matches
     model: 'anthropic/claude-haiku-5.5',
     tiers: ['light', 'standard', 'deep'],
     describe: { light: 'a trivial lookup', standard: 'a normal question', deep: 'multi-step reasoning' },
@@ -35,19 +66,15 @@ const { tier, via, reason } = await router.route(query, { vip: user.vip });
 const model = inferenceModel(tier); // hand the tier to the inference block
 ```
 
-- `createRouter<Tier, Ctx>({ tiers, default, rules?, classifier? })` → `{ route(query, ctx) }`. Validates that `default` and every rule tier are in `tiers`.
-- `route` returns `{ tier, via: 'rule' | 'classifier' | 'default', reason }` — `via`/`reason` are handy to log how each query was routed.
-- Rule builders: `byMaxLength`, `byMinLength`, `byKeywords` (whole-word, case-insensitive), `byContext` (predicate over your context). A rule is just `{ tier, when(query, ctx), reason? }` — write your own.
-- `aiClassifier({ model, tiers, describe, instructions?, providerOptions? })` (adapter) builds a classifier from an AI SDK model; it returns `null` for an unrecognised reply so the router falls through.
+- `createRouter<Tier, Ctx>({ tiers, default, rules?, classifier? })` → `{ route(query, ctx) }`.
+  Validates that `default` and every rule tier are in `tiers`.
+- `route` returns `{ tier, via: 'rule' | 'classifier' | 'default', reason }` — `via` / `reason` are
+  handy for logging how each query was routed.
+- Rule builders: `byMaxLength`, `byMinLength`, `byKeywords` (whole-word, case-insensitive),
+  `byContext` (a predicate over your context). A rule is just `{ tier, when(query, ctx), reason? }` —
+  write your own.
+- `aiClassifier({ model, tiers, describe, instructions?, providerOptions? })` (adapter) builds the
+  sorter from an AI SDK model; it returns `null` for an unrecognised reply so the router falls through
+  to the default. It's bounded by `classifierTimeoutMs` (default 3000).
 
-## Fail-safe
-
-Rules are pure and can't fail. If the classifier **throws** or returns a tier **not in `tiers`**, the
-router ignores it and uses the default — a flaky or misconfigured classifier degrades routing to the
-safe default, it never takes a request down or routes somewhere invalid.
-
-## Scope
-
-Routing picks a *tier*; mapping a tier to an actual model/provider is the `inference` block's job.
-Keep the classifier model small — if classification costs as much as just answering, route by rules
-only (omit the classifier) or widen the rules.
+</details>

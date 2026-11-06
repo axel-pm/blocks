@@ -15,6 +15,30 @@ This is the [shadcn/ui](https://ui.shadcn.com) model applied to backend AI plumb
 > may still change between versions. Because you copy source in, an upgrade never breaks you silently
 > — you re-copy when you choose. See [drift](#using-a-block).
 
+## How the pieces fit together
+
+These six blocks break a trustworthy AI app into parts that each do one job and work on their own.
+Together they take a user's question and return an answer that is cheap to produce, grounded in your
+own documents, and checked before it ships.
+
+![The six blocks and how they fit together](docs/img/overview.png)
+
+## The six blocks
+
+Each block has its **own page with a diagram and a plain-English explanation** — click through:
+
+| Block | In plain terms |
+|---|---|
+| [**router**](./router) | Sends each question to the right-sized model — cheap for easy ones, powerful for hard ones. |
+| [**inference**](./inference) | Swap where your AI runs (a cloud gateway, an EU provider, your own servers) without rewriting the app. |
+| [**rag**](./rag) | Answers from *your own* documents, and shows the sources so the answer can be checked. |
+| [**verify-correct**](./verify-correct) | Catches a made-up answer before users see it, and fixes it against the sources. |
+| [**guardrails**](./guardrails) | Hides personal data, caps spending per user, and stops text from smuggling in instructions. |
+| [**settings**](./settings) | Change how the app behaves at runtime — no code change, no redeploy — always with a safe default. |
+
+Every block is **safe by design**: if a part is misconfigured or fails, the app degrades gracefully
+instead of breaking or doing something you didn't approve.
+
 ## Why copy-in (the two things this optimises for)
 
 **Portability.** A block has no runtime coupling to this repo. Once copied, it's ordinary
@@ -73,30 +97,11 @@ global modules) — and it's the decoupling learned the hard way: a registry tha
 See [`AGENTS.md`](./AGENTS.md) for the conventions an author (human or agent) follows when
 adding a block.
 
-## Registry
+## Registry (machine-readable)
 
-[`registry.json`](./registry.json) indexes the blocks. Current:
-
-Together these decompose a grounded-answer AI app — route a query, resolve a model, retrieve and
-cite, verify, and keep it safe and configurable — each usable on its own.
-
-- **inference** — provider-agnostic model resolution. One seam turns `(role) → model + provider
-  options`; swap where inference runs (Vercel AI Gateway, Mistral EU, any OpenAI-compatible
-  endpoint, self-hosted) without touching call sites. A fail-closed chooser keeps an unvetted or
-  misconfigured target from serving traffic; residency / retention are operator-declared metadata
-  enforced by the injected gateway options, not by the block.
-- **rag** — retrieval pipeline: documents → structure-aware chunks → an embedded, serialisable index
-  → cited top-k retrievals. Provider-free core (embedder injected); a security-defaulted repo/KB
-  ingester and a one-command CLI. Fences passages against prompt injection.
-- **router** — classify a query into a tier (which model should answer): deterministic rules first,
-  then an optional injected LLM classifier (bounded by a timeout), then a safe default. Fail-safe.
-- **verify-correct** — bounded generate → verify → correct loop that catches ungrounded answers;
-  judge/corrector/generate injected. Fail-safe: never reports a false "verified", never crashes
-  answering.
-- **guardrails** — security primitives: reversible PII masking, per-principal spend/rate caps over
-  an injected store, and untrusted-content fencing. Zero dependencies.
-- **settings** — runtime operator-editable config: typed setting resolved env-override → stored
-  value → default, short cache (live after a write), fail-safe decoding. Store + env injected.
+[`registry.json`](./registry.json) indexes every block for the CLI — name, path, description, and
+peer dependencies — validated by [`registry.schema.json`](./registry.schema.json). The diagrams above
+are built from [`docs/diagrams.html`](./docs/diagrams.html).
 
 ## Contributing
 

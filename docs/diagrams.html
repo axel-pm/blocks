@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>blocks — diagrams</title>
+<style>
+  :root{
+    --page:#eceff3; --card:#ffffff; --ink:#0b1220; --muted:#51607a;
+    --slate-bg:#f1f5f9; --slate-br:#cbd5e1; --slate-tx:#0f172a;
+    --blue-bg:#e3edff; --blue-br:#93c5fd; --blue-tx:#1d4ed8;
+    --violet-bg:#ede9fe; --violet-br:#c4b5fd; --violet-tx:#6d28d9;
+    --green-bg:#dcfce7; --green-br:#86efac; --green-tx:#15803d;
+    --amber-bg:#fef3c7; --amber-br:#fcd34d; --amber-tx:#b45309;
+    --arrow:#94a3b8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--page)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;
+    padding:36px;width:max-content}
+  .card{display:none;flex-direction:column;width:1160px;background:var(--card);
+    border-radius:22px;box-shadow:0 10px 40px rgba(15,23,42,.10),0 2px 8px rgba(15,23,42,.06);
+    padding:44px 48px}
+  .card.show{display:flex}
+  #overview{width:1480px}
+  #overview .node{min-width:0}
+  #overview .arrow{padding:0 10px;min-width:48px}
+  .eyebrow{font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-tx);margin-bottom:8px}
+  h1{font-size:40px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+  .lede{font-size:18px;line-height:1.5;color:var(--muted);max-width:980px;margin-bottom:30px}
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap}
+  .col{display:flex;flex-direction:column;gap:14px;flex-wrap:nowrap}
+  .node{border-radius:16px;padding:16px 18px;border:1.5px solid var(--slate-br);background:var(--slate-bg);
+    color:var(--slate-tx);min-width:150px;display:flex;flex-direction:column;gap:5px;justify-content:center}
+  .node .t{font-size:17px;font-weight:750;line-height:1.2}
+  .node .d{font-size:13.5px;line-height:1.35;opacity:.85}
+  .blue{background:var(--blue-bg);border-color:var(--blue-br);color:var(--blue-tx)}
+  .violet{background:var(--violet-bg);border-color:var(--violet-br);color:var(--violet-tx)}
+  .green{background:var(--green-bg);border-color:var(--green-br);color:var(--green-tx)}
+  .amber{background:var(--amber-bg);border-color:var(--amber-br);color:var(--amber-tx)}
+  .arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--arrow);
+    padding:0 14px;min-width:64px;align-self:center}
+  .arrow .cap{font-size:12px;font-weight:650;margin-bottom:2px;color:var(--muted);text-align:center;white-space:nowrap}
+  .arrow .ln{font-size:30px;line-height:1}
+  .safe{margin-top:30px;display:flex;align-items:center;gap:14px;background:var(--amber-bg);
+    border:1.5px solid var(--amber-br);border-radius:16px;padding:16px 20px;color:var(--amber-tx);
+    font-size:15.5px;line-height:1.45}
+  .safe b{font-weight:800}
+  .safe .ic{font-size:22px}
+  .row-note{font-size:14.5px;color:var(--muted);margin-top:18px;line-height:1.5}
+  .lane{display:flex;align-items:center;gap:0;margin-bottom:8px}
+  .lane .lbl{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    width:92px;flex:none}
+  .cards3{display:flex;gap:18px}
+  .panel{flex:1;border-radius:16px;border:1.5px solid var(--slate-br);background:var(--slate-bg);padding:20px}
+  .panel h3{font-size:18px;font-weight:800;margin-bottom:6px}
+  .panel p{font-size:14px;line-height:1.5;color:var(--muted)}
+  .panel .mini{margin-top:12px;font-size:13px;font-weight:650;color:var(--slate-tx);background:#fff;
+    border:1px dashed var(--slate-br);border-radius:10px;padding:8px 10px}
+  .ladder{display:flex;flex-direction:column;gap:0}
+  .step{display:flex;align-items:center;gap:16px}
+  .step .num{width:34px;height:34px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:16px;background:var(--blue-bg);color:var(--blue-tx);border:1.5px solid var(--blue-br)}
+  .step .body{flex:1;border-radius:14px;border:1.5px solid var(--slate-br);background:var(--slate-bg);padding:12px 16px;margin:7px 0}
+  .step .body .t{font-size:16px;font-weight:750}
+  .step .body .d{font-size:13.5px;color:var(--muted);margin-top:2px}
+  .down{margin-left:16px;color:var(--arrow);font-size:20px;line-height:.6;height:14px}
+  .chips{display:flex;gap:12px;margin-top:22px}
+  .chip{display:flex;flex-direction:column;gap:3px;border-radius:14px;padding:12px 16px;flex:1;
+    border:1.5px solid var(--violet-br);background:var(--violet-bg);color:var(--violet-tx)}
+  .chip .t{font-weight:800;font-size:15px}
+  .chip .d{font-size:13px;opacity:.9;line-height:1.35}
+  .brand{position:absolute;top:18px;right:26px;font-size:13px;font-weight:700;color:#aab4c4;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<!-- OVERVIEW -->
+<section class="card" id="overview">
+  <div class="brand">github.com/axel-pm/blocks</div>
+  <div class="eyebrow">The toolkit</div>
+  <h1>Six blocks, one trustworthy AI app</h1>
+  <p class="lede">Each block does one job and works on its own. Together they take a user's question
+    and return an answer that is cheap to produce, grounded in your own documents, and checked before
+    it ships.</p>
+  <div class="flow">
+    <div class="node"><div class="t">A question</div><div class="d">from your user</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node blue"><div class="t">router</div><div class="d">how hard is this? pick a tier</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node blue"><div class="t">inference</div><div class="d">which model, running where</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node violet"><div class="t">rag</div><div class="d">find the facts in your docs</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node violet"><div class="t">verify‑correct</div><div class="d">is the answer backed up?</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node green"><div class="t">Answer</div><div class="d">with citations</div></div>
+  </div>
+  <div class="chips">
+    <div class="chip"><div class="t">guardrails · wraps the whole flow</div><div class="d">Hide personal data, cap spending per user, and stop hidden instructions in text from hijacking the model.</div></div>
+    <div class="chip"><div class="t">settings · the control panel</div><div class="d">Change how the app behaves at runtime — no code change, no redeploy — always with a safe default.</div></div>
+  </div>
+  <div class="safe"><span class="ic">🛟</span><div><b>Safe by design.</b> Every block has a safe fallback: if a part is misconfigured or fails, the app degrades gracefully instead of breaking or doing something unapproved.</div></div>
+</section>
+
+<!-- ROUTER -->
+<section class="card" id="router">
+  <div class="brand">blocks · router</div>
+  <div class="eyebrow">router</div>
+  <h1>Send each question to the right‑sized model</h1>
+  <p class="lede">A big model for a hard question, a small cheap one for an easy question. The router
+    decides — using fast free rules first, and only paying for an AI "sorter" when the rules can't tell.</p>
+  <div class="flow">
+    <div class="node"><div class="t">A question</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node blue"><div class="t">1 · Rules</div><div class="d">fast, free, in order — e.g. "short question → small model"</div></div>
+    <div class="arrow"><div class="cap">no rule fits</div><div class="ln">→</div></div>
+    <div class="node violet"><div class="t">2 · AI sorter</div><div class="d">optional; time‑limited; only when needed</div></div>
+    <div class="arrow"><div class="cap">still unclear</div><div class="ln">→</div></div>
+    <div class="node amber"><div class="t">3 · Safe default</div><div class="d">a sensible tier</div></div>
+  </div>
+  <div class="flow" style="margin-top:22px;justify-content:center">
+    <div class="node green" style="min-width:520px"><div class="t">Result → a tier: light · standard · deep</div><div class="d">handed to the inference block, which turns the tier into an actual model</div></div>
+  </div>
+  <div class="safe"><span class="ic">🛟</span><div><b>Can't take the app down.</b> Rules can't fail. If the AI sorter errors or times out, the router simply uses the safe default — never a broken or invalid choice.</div></div>
+</section>
+
+<!-- INFERENCE -->
+<section class="card" id="inference">
+  <div class="brand">blocks · inference</div>
+  <div class="eyebrow">inference</div>
+  <h1>Swap where your AI runs — without touching your app</h1>
+  <p class="lede">Your code just asks for a job ("answer this"). One central list decides which model
+    serves it and where it runs — a cloud gateway, an EU provider, your own servers. Change the list,
+    re‑point the whole app.</p>
+  <div class="flow">
+    <div class="node"><div class="t">A job</div><div class="d">e.g. "answer", "verify"</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node blue"><div class="t">The target list</div><div class="d">where AI can run:<br>Gateway (EU) · Mistral · your own endpoint</div></div>
+    <div class="arrow"><div class="cap">safety check</div><div class="ln">→</div></div>
+    <div class="node violet"><div class="t">Resolver</div><div class="d">picks the model + its settings</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node green"><div class="t">A ready‑to‑use model</div><div class="d">your call site stays the same</div></div>
+  </div>
+  <div class="row-note"><b>The safety check, in plain terms:</b> a target is only used if it really exists, has its access key, and has been approved for production. Anything else is quietly swapped for the vetted default.</div>
+  <div class="safe"><span class="ic">🛟</span><div><b>Never routes somewhere you didn't approve.</b> A typo, a missing key, or an un‑vetted provider can't send your users' traffic to the wrong place — it falls back to the trusted default, or refuses rather than send an unauthenticated request.</div></div>
+</section>
+
+<!-- RAG -->
+<section class="card" id="rag">
+  <div class="brand">blocks · rag</div>
+  <div class="eyebrow">rag</div>
+  <h1>Answer from your own documents — with citations</h1>
+  <p class="lede">Point it at a folder of documents. It turns them into a searchable index, then for any
+    question it pulls the most relevant passages and hands them over <i>with their source</i>, so the
+    answer can be checked.</p>
+  <div class="lane"><div class="lbl">Set up</div>
+    <div class="flow">
+      <div class="node"><div class="t">Your documents</div><div class="d">a repo, docs, a knowledge base</div></div>
+      <div class="arrow"><div class="ln">→</div></div>
+      <div class="node blue"><div class="t">Split into passages</div></div>
+      <div class="arrow"><div class="ln">→</div></div>
+      <div class="node blue"><div class="t">Turn into searchable form</div></div>
+      <div class="arrow"><div class="ln">→</div></div>
+      <div class="node violet"><div class="t">Index file</div><div class="d">one portable file</div></div>
+    </div>
+  </div>
+  <div class="lane"><div class="lbl">Ask</div>
+    <div class="flow">
+      <div class="node"><div class="t">A question</div></div>
+      <div class="arrow"><div class="ln">→</div></div>
+      <div class="node blue"><div class="t">Find closest passages</div><div class="d">ranked by relevance</div></div>
+      <div class="arrow"><div class="ln">→</div></div>
+      <div class="node green"><div class="t">Top passages + citations</div><div class="d">source + score for each</div></div>
+    </div>
+  </div>
+  <div class="safe"><span class="ic">🔒</span><div><b>Doesn't leak your secrets.</b> The folder reader skips passwords, keys and credential files by name <i>and</i> by content, skips huge/binary files, and caps how much it reads. Passages are "fenced" so text inside a document can't issue instructions to the model.</div></div>
+</section>
+
+<!-- VERIFY-CORRECT -->
+<section class="card" id="verify-correct">
+  <div class="brand">blocks · verify‑correct</div>
+  <div class="eyebrow">verify‑correct</div>
+  <h1>Don't ship a hallucination</h1>
+  <p class="lede">Before an answer reaches the user, a second model checks every claim against the
+    source documents. If something isn't backed up, it rewrites the answer and checks again — a few
+    times at most.</p>
+  <div class="flow">
+    <div class="node"><div class="t">Draft answer<br>+ its sources</div></div>
+    <div class="arrow"><div class="ln">→</div></div>
+    <div class="node violet"><div class="t">Judge</div><div class="d">is every claim supported by a source?</div></div>
+    <div class="arrow"><div class="cap">all supported</div><div class="ln">→</div></div>
+    <div class="node green"><div class="t">✓ Return answer</div><div class="d">marked verified</div></div>
+  </div>
+  <div class="flow" style="margin-top:16px;align-items:center">
+    <div class="arrow" style="min-width:150px"><div class="cap">something unsupported</div><div class="ln">↓</div></div>
+    <div class="node blue"><div class="t">Correct</div><div class="d">rewrite using only the sources</div></div>
+    <div class="arrow"><div class="cap">re‑check (capped)</div><div class="ln">↺</div></div>
+    <div class="node amber"><div class="t">Still unsure?</div><div class="d">return, clearly flagged "couldn't fully verify"</div></div>
+  </div>
+  <div class="safe"><span class="ic">🛟</span><div><b>Can never cry "verified" by mistake.</b> If the checker fails or replies in a form it doesn't understand, the result is always "not verified" — never a false pass. A broken checker won't crash answering.</div></div>
+</section>
+
+<!-- GUARDRAILS -->
+<section class="card" id="guardrails">
+  <div class="brand">blocks · guardrails</div>
+  <div class="eyebrow">guardrails</div>
+  <h1>Three safety tools for an AI app</h1>
+  <p class="lede">Use any one on its own — they share no dependencies. Keep personal data out of the
+    model, stop runaway spending, and stop text from smuggling in instructions.</p>
+  <div class="cards3">
+    <div class="panel">
+      <h3>🔒 Hide personal data</h3>
+      <p>Swaps emails, phone numbers and names for placeholders before text goes to the model or the logs — and can put the originals back in the reply.</p>
+      <div class="mini">jo@acme.com → ⟦EMAIL_1⟧</div>
+    </div>
+    <div class="panel">
+      <h3>💳 Cap spending</h3>
+      <p>A per‑user limit over a time window. When counting races, it over‑counts rather than over‑admits — the safe direction for a budget.</p>
+      <div class="mini">over $5 today → blocked</div>
+    </div>
+    <div class="panel">
+      <h3>🚧 Fence untrusted text</h3>
+      <p>Wraps a document so the model treats it as <i>data, not commands</i> — a pasted "ignore your rules" can't break out.</p>
+      <div class="mini">+ an advisory "looks injected?" check</div>
+    </div>
+  </div>
+  <div class="safe"><span class="ic">🛟</span><div><b>Best‑effort safety, zero dependencies.</b> These reduce risk and never make it worse; they're one layer of defence, not the only one. Placeholders carry a per‑call random tag so they can't be guessed and abused.</div></div>
+</section>
+
+<!-- SETTINGS -->
+<section class="card" id="settings">
+  <div class="brand">blocks · settings</div>
+  <div class="eyebrow">settings</div>
+  <h1>Change how the app behaves — live, no redeploy</h1>
+  <p class="lede">An operator flips a setting and it takes effect right away. When the app needs a
+    setting's value, it checks three places in order and uses the first good one.</p>
+  <div class="ladder">
+    <div class="step"><div class="num">1</div><div class="body"><div class="t">An environment override set?</div><div class="d">checked first, takes effect instantly — handy for emergencies</div></div></div>
+    <div class="down">↓ if not</div>
+    <div class="step"><div class="num">2</div><div class="body"><div class="t">A stored value (saved by an operator)?</div><div class="d">lives in your database; changing it takes effect without a redeploy</div></div></div>
+    <div class="down">↓ if not</div>
+    <div class="step"><div class="num">3</div><div class="body"><div class="t">The built‑in default</div><div class="d">always present, so there's always an answer</div></div></div>
+  </div>
+  <div class="row-note">A short in‑memory cache keeps this fast; saving a new value refreshes it immediately.</div>
+  <div class="safe"><span class="ic">🛟</span><div><b>A bad value can't break you.</b> A stored or env value that doesn't make sense is ignored in favour of the default (and logged), so a typo in config never takes down your live app.</div></div>
+</section>
+
+<script>
+  function render(){
+    var h=(location.hash||'#overview').slice(1);
+    document.querySelectorAll('.card').forEach(function(c){ c.classList.toggle('show', c.id===h); });
+  }
+  window.addEventListener('hashchange', render);
+  render();
+</script>
+</body>
+</html>
