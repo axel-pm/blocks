@@ -1,6 +1,7 @@
 {
   "name": "settings",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Runtime, operator-editable configuration: resolve a typed setting from an env override → a persisted store value → a safe default, with a short in-memory cache (live within the window, immediate after a write) and fail-safe decoding. Persistence and env are injected; the newest-row-wins app_settings pattern is documented. Zero-dependency pure core.",
   "peerDependencies": {},
   "env": [],

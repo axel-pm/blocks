@@ -1,6 +1,7 @@
 {
   "name": "router",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Classify a query into a tier (e.g. light | standard | deep) to pick which model answers it: fast deterministic rules first (length, keywords, context), then an optional injected LLM classifier, then a safe default. Fail-safe — a classifier that errors or returns an unknown tier falls through to the default. Provider-free core; an AI SDK classifier adapter is included.",
   "peerDependencies": { "ai": "^7" },
   "env": [],

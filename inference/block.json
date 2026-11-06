@@ -1,6 +1,7 @@
 {
   "name": "inference",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Provider-agnostic model resolution: one seam turns (role) into model + provider options, so you can swap where inference runs (Vercel AI Gateway, Mistral EU, any OpenAI-compatible endpoint) without touching call sites. A fail-closed chooser keeps an unvetted or misconfigured target from ever serving traffic; residency/retention are operator-declared metadata enforced by the injected gateway options, not by the block.",
   "peerDependencies": {
     "ai": "^7",

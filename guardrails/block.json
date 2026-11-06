@@ -1,6 +1,7 @@
 {
   "name": "guardrails",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Security primitives for an AI app: reversible PII masking (emails, phones, names, custom patterns) to redact before text leaves your trust boundary; per-principal spend/rate caps over an injected atomic store; and untrusted-content fencing + an advisory injection detector for prompt safety. Zero-dependency pure core.",
   "peerDependencies": {},
   "env": [],

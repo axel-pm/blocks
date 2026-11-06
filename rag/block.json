@@ -1,6 +1,7 @@
 {
   "name": "rag",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "A portable retrieval pipeline: documents → structure-aware chunks → an embedded, serialisable index → cited top-k retrievals. The core is pure and provider-free (the embedder is injected); adapters add a security-defaulted repo/dir ingester, an AI SDK embedder, and a one-command CLI to point at a repo or knowledge base and get a queryable RAG.",
   "peerDependencies": {
     "ai": "^7"

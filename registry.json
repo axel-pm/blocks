@@ -1,5 +1,6 @@
 {
   "$schema": "./registry.schema.json",
+  "license": "MIT",
   "blocks": [
     {
       "name": "inference",

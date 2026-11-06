@@ -1,6 +1,7 @@
 {
   "name": "blocks",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Copy-in source registry of composable AI building blocks. This package.json exists only to type-check and test the blocks; it is not published and not copied into consuming projects.",
   "bin": {

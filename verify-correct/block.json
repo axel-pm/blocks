@@ -1,6 +1,7 @@
 {
   "name": "verify-correct",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Check that a generated answer is grounded in its sources and, if not, correct it — a bounded verify/correct loop. Provider-free core (judge, corrector, and generator are injected functions); fail-safe (a broken judge/corrector never crashes answering or silently claims an answer is verified). AI SDK judge + corrector adapter included.",
   "peerDependencies": { "ai": "^7" },
   "env": [],

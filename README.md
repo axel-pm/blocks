@@ -1,10 +1,19 @@
 # blocks
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+![TypeScript](https://img.shields.io/badge/TypeScript-Node-3178c6.svg)
+![AI SDK 7](https://img.shields.io/badge/AI%20SDK-7-black.svg)
+![Status: early](https://img.shields.io/badge/status-early%20(v0.1)-orange.svg)
+
 Composable, portable building blocks for TypeScript/Node AI apps — a **copy-in source
 registry**, not a dependency. You don't `npm install` a block; a tiny CLI copies its
 **source** into your project, and your project owns the code from then on.
 
 This is the [shadcn/ui](https://ui.shadcn.com) model applied to backend AI plumbing.
+
+> **Status:** early (v0.1). The six blocks below are tested and adversarially reviewed, but the API
+> may still change between versions. Because you copy source in, an upgrade never breaks you silently
+> — you re-copy when you choose. See [drift](#using-a-block).
 
 ## Why copy-in (the two things this optimises for)
 
@@ -88,3 +97,18 @@ cite, verify, and keep it safe and configurable — each usable on its own.
   an injected store, and untrusted-content fencing. Zero dependencies.
 - **settings** — runtime operator-editable config: typed setting resolved env-override → stored
   value → default, short cache (live after a write), fail-safe decoding. Store + env injected.
+
+## Contributing
+
+Issues and PRs are welcome. Every block follows the same portability + security contract — read
+[`AGENTS.md`](./AGENTS.md) before adding or changing one, and [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+for the workflow. By contributing you agree your contribution is licensed under the MIT License.
+
+## License
+
+[MIT](./LICENSE) © Axel Sooriah.
+
+Every block is MIT-licensed. When you copy a block into your project with the CLI, the source becomes
+yours to use, modify, and ship under those terms — keep the copyright notice from `LICENSE`. The only
+third-party code a block relies on is its declared `peerDependencies` (Vercel [AI SDK](https://ai-sdk.dev)
+packages, Apache-2.0), which you install and which carry their own permissive licenses.
